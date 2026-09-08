@@ -27,6 +27,7 @@ export default function AdminProductForm({
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   function resetForm() {
     setEditingId(null);
@@ -43,6 +44,33 @@ export default function AdminProductForm({
     setPrice(String(product.price));
     setImageUrl(product.image_url ?? "");
     window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    setError("");
+
+    const filePath = `${Date.now()}-${file.name}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from("product-images")
+      .upload(filePath, file);
+
+    setUploading(false);
+
+    if (uploadError) {
+      setError("Non è stato possibile caricare l'immagine.");
+      return;
+    }
+
+    const { data } = supabase.storage
+      .from("product-images")
+      .getPublicUrl(filePath);
+
+    setImageUrl(data.publicUrl);
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -151,7 +179,38 @@ export default function AdminProductForm({
             />
           </div>
           <div className="field">
-            <label htmlFor="image_url">URL immagine</label>
+            <label htmlFor="image_file">Immagine</label>
+            <input
+              id="image_file"
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+            />
+            {uploading && (
+              <span style={{ fontSize: "0.82rem", color: "var(--paper-muted)" }}>
+                Caricamento in corso…
+              </span>
+            )}
+            {imageUrl && !uploading && (
+              <div
+                style={{
+                  width: 72,
+                  height: 72,
+                  border: "1px solid var(--paper-line)",
+                  overflow: "hidden",
+                  marginTop: 4,
+                }}
+              >
+                <img
+                  src={imageUrl}
+                  alt="Anteprima"
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                />
+              </div>
+            )}
+          </div>
+          <div className="field">
+            <label htmlFor="image_url">Oppure incolla un URL immagine</label>
             <input
               id="image_url"
               value={imageUrl}
@@ -159,7 +218,7 @@ export default function AdminProductForm({
               placeholder="https://…"
             />
           </div>
-          <button className="btn" type="submit" disabled={loading}>
+          <button className="btn" type="submit" disabled={loading || uploading}>
             {loading
               ? "Salvataggio…"
               : editingId
