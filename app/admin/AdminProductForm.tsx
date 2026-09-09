@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-
+import { compressImage } from "@/lib/imageCompress";
 type Product = {
   id: string;
   name: string;
@@ -59,15 +59,15 @@ export default function AdminProductForm({
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const rawFile = e.target.files?.[0];
+    if (!rawFile) return;
 
     setUploading(true);
     setError("");
 
+    const file = await compressImage(rawFile);
     const filePath = `${Date.now()}-${file.name}`;
-
     const { error: uploadError } = await supabase.storage
       .from("product-images")
       .upload(filePath, file);
@@ -97,7 +97,8 @@ export default function AdminProductForm({
 
     const uploadedUrls: string[] = [];
 
-    for (const file of Array.from(files)) {
+        for (const rawFile of Array.from(files)) {
+      const file = await compressImage(rawFile);
       const filePath = `${Date.now()}-${file.name}`;
       const { error: uploadError } = await supabase.storage
         .from("product-images")
