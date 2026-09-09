@@ -5,6 +5,7 @@ type Product = {
   name: string;
   price: number;
   image_url: string | null;
+  category?: string;
 };
 
 export default function ProductCard({ product }: { product: Product }) {
@@ -18,6 +19,9 @@ export default function ProductCard({ product }: { product: Product }) {
         )}
       </div>
       <div className="product-card-body">
+        {product.category && (
+          <span className="product-card-category">{product.category}</span>
+        )}
         <span className="product-card-name">{product.name}</span>
         <span className="product-card-price">
           € {product.price.toFixed(2)}
