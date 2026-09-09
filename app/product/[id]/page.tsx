@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import ProductGallery from "@/components/ProductGallery";
 
 export default async function ProductDetailPage({
   params,
@@ -10,7 +11,7 @@ export default async function ProductDetailPage({
   const supabase = createClient();
   const { data: product } = await supabase
     .from("products")
-    .select("id, name, description, price, image_url, in_stock")
+    .select("id, name, description, price, image_url, in_stock, gallery_urls")
     .eq("id", params.id)
     .single();
 
@@ -18,14 +19,15 @@ export default async function ProductDetailPage({
     notFound();
   }
 
+  const images = [
+    ...(product.image_url ? [product.image_url] : []),
+    ...(product.gallery_urls ?? []),
+  ];
+
   return (
     <>
       <div className="product-detail">
-        <div className="product-detail-media">
-          {product.image_url && (
-            <img src={product.image_url} alt={product.name} />
-          )}
-        </div>
+        <ProductGallery name={product.name} images={images} />
         <div>
           <h1>{product.name}</h1>
           <div className="product-detail-price">
