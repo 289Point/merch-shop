@@ -9,6 +9,7 @@ type Product = {
   description: string | null;
   price: number;
   image_url: string | null;
+  category: string;
 };
 
 export default function AdminProductForm({
@@ -24,6 +25,7 @@ export default function AdminProductForm({
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
   const [imageUrl, setImageUrl] = useState("");
+  const [category, setCategory] = useState("");
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -35,6 +37,7 @@ export default function AdminProductForm({
     setDescription("");
     setPrice("");
     setImageUrl("");
+    setCategory("");
   }
 
   function startEdit(product: Product) {
@@ -43,6 +46,7 @@ export default function AdminProductForm({
     setDescription(product.description ?? "");
     setPrice(String(product.price));
     setImageUrl(product.image_url ?? "");
+    setCategory(product.category ?? "");
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
@@ -90,6 +94,7 @@ export default function AdminProductForm({
       description: description || null,
       price: parsedPrice,
       image_url: imageUrl || null,
+      category: category.trim() || "Generale",
     };
 
     if (editingId) {
@@ -166,6 +171,23 @@ export default function AdminProductForm({
               value={description}
               onChange={(e) => setDescription(e.target.value)}
             />
+          </div>
+          <div className="field">
+            <label htmlFor="category">Categoria</label>
+            <input
+              id="category"
+              list="category-suggestions"
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              placeholder="es. T-shirt, Felpe, Accessori"
+            />
+            <datalist id="category-suggestions">
+              {Array.from(new Set(products.map((p) => p.category))).map(
+                (cat) => (
+                  <option key={cat} value={cat} />
+                )
+              )}
+            </datalist>
           </div>
           <div className="field">
             <label htmlFor="price">Prezzo (€)</label>
@@ -253,7 +275,7 @@ export default function AdminProductForm({
             <div className="admin-row-info">
               <div className="admin-row-name">{product.name}</div>
               <div className="admin-row-price">
-                € {product.price.toFixed(2)}
+                {product.category} · € {product.price.toFixed(2)}
               </div>
             </div>
             <div className="admin-row-actions">
