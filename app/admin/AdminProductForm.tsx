@@ -10,6 +10,7 @@ type Product = {
   price: number;
   image_url: string | null;
   category: string;
+  in_stock: boolean;
 };
 
 export default function AdminProductForm({
@@ -26,6 +27,7 @@ export default function AdminProductForm({
   const [price, setPrice] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [category, setCategory] = useState("");
+  const [inStock, setInStock] = useState(true);
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -38,6 +40,7 @@ export default function AdminProductForm({
     setPrice("");
     setImageUrl("");
     setCategory("");
+    setInStock(true);
   }
 
   function startEdit(product: Product) {
@@ -47,6 +50,7 @@ export default function AdminProductForm({
     setPrice(String(product.price));
     setImageUrl(product.image_url ?? "");
     setCategory(product.category ?? "");
+    setInStock(product.in_stock);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
@@ -95,6 +99,7 @@ export default function AdminProductForm({
       price: parsedPrice,
       image_url: imageUrl || null,
       category: category.trim() || "Generale",
+      in_stock: inStock,
     };
 
     if (editingId) {
@@ -240,6 +245,17 @@ export default function AdminProductForm({
               placeholder="https://…"
             />
           </div>
+          <div className="field field-checkbox">
+            <label htmlFor="in_stock">
+              <input
+                id="in_stock"
+                type="checkbox"
+                checked={inStock}
+                onChange={(e) => setInStock(e.target.checked)}
+              />
+              Disponibile (deseleziona per segnarlo come esaurito)
+            </label>
+          </div>
           <button className="btn" type="submit" disabled={loading || uploading}>
             {loading
               ? "Salvataggio…"
@@ -273,7 +289,12 @@ export default function AdminProductForm({
               )}
             </div>
             <div className="admin-row-info">
-              <div className="admin-row-name">{product.name}</div>
+              <div className="admin-row-name">
+                {product.name}
+                {!product.in_stock && (
+                  <span className="admin-badge-sold-out">Esaurito</span>
+                )}
+              </div>
               <div className="admin-row-price">
                 {product.category} · € {product.price.toFixed(2)}
               </div>
