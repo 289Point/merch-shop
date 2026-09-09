@@ -6,6 +6,7 @@ type Product = {
   price: number;
   image_url: string | null;
   category?: string;
+  in_stock?: boolean;
 };
 
 export default function ProductCard({ product }: { product: Product }) {
@@ -16,6 +17,9 @@ export default function ProductCard({ product }: { product: Product }) {
           <img src={product.image_url} alt={product.name} />
         ) : (
           <span className="product-card-media-empty">Nessuna immagine</span>
+        )}
+        {product.in_stock === false && (
+          <span className="product-card-sold-out">Esaurito</span>
         )}
       </div>
       <div className="product-card-body">
