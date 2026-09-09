@@ -11,6 +11,7 @@ type Product = {
   image_url: string | null;
   category: string;
   in_stock: boolean;
+  gallery_urls: string[];
 };
 
 export default function AdminProductForm({
@@ -28,10 +29,12 @@ export default function AdminProductForm({
   const [imageUrl, setImageUrl] = useState("");
   const [category, setCategory] = useState("");
   const [inStock, setInStock] = useState(true);
+  const [galleryUrls, setGalleryUrls] = useState<string[]>([]);
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [uploadingGallery, setUploadingGallery] = useState(false);
 
   function resetForm() {
     setEditingId(null);
@@ -41,6 +44,7 @@ export default function AdminProductForm({
     setImageUrl("");
     setCategory("");
     setInStock(true);
+    setGalleryUrls([]);
   }
 
   function startEdit(product: Product) {
@@ -51,6 +55,7 @@ export default function AdminProductForm({
     setImageUrl(product.image_url ?? "");
     setCategory(product.category ?? "");
     setInStock(product.in_stock);
+    setGalleryUrls(product.gallery_urls ?? []);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
@@ -81,6 +86,44 @@ export default function AdminProductForm({
     setImageUrl(data.publicUrl);
   }
 
+  async function handleGalleryFilesChange(
+    e: React.ChangeEvent<HTMLInputElement>
+  ) {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setUploadingGallery(true);
+    setError("");
+
+    const uploadedUrls: string[] = [];
+
+    for (const file of Array.from(files)) {
+      const filePath = `${Date.now()}-${file.name}`;
+      const { error: uploadError } = await supabase.storage
+        .from("product-images")
+        .upload(filePath, file);
+
+      if (uploadError) {
+        setError("Non è stato possibile caricare una o più immagini.");
+        continue;
+      }
+
+      const { data } = supabase.storage
+        .from("product-images")
+        .getPublicUrl(filePath);
+
+      uploadedUrls.push(data.publicUrl);
+    }
+
+    setGalleryUrls((prev) => [...prev, ...uploadedUrls]);
+    setUploadingGallery(false);
+    e.target.value = "";
+  }
+
+  function removeGalleryImage(index: number) {
+    setGalleryUrls((prev) => prev.filter((_, i) => i !== index));
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
@@ -100,6 +143,7 @@ export default function AdminProductForm({
       image_url: imageUrl || null,
       category: category.trim() || "Generale",
       in_stock: inStock,
+      gallery_urls: galleryUrls,
     };
 
     if (editingId) {
@@ -245,6 +289,39 @@ export default function AdminProductForm({
               placeholder="https://…"
             />
           </div>
+          <div className="field">
+            <label htmlFor="gallery_files">
+              Altre foto (facoltativo, puoi selezionarne più di una insieme)
+            </label>
+            <input
+              id="gallery_files"
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={handleGalleryFilesChange}
+            />
+            {uploadingGallery && (
+              <span style={{ fontSize: "0.82rem", color: "var(--paper-muted)" }}>
+                Caricamento in corso…
+              </span>
+            )}
+            {galleryUrls.length > 0 && (
+              <div className="gallery-thumbs">
+                {galleryUrls.map((url, index) => (
+                  <div className="gallery-thumb" key={url + index}>
+                    <img src={url} alt={`Foto ${index + 1}`} />
+                    <button
+                      type="button"
+                      onClick={() => removeGalleryImage(index)}
+                      aria-label="Rimuovi foto"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
           <div className="field field-checkbox">
             <label htmlFor="in_stock">
               <input
@@ -256,7 +333,11 @@ export default function AdminProductForm({
               Disponibile (deseleziona per segnarlo come esaurito)
             </label>
           </div>
-          <button className="btn" type="submit" disabled={loading || uploading}>
+          <button
+            className="btn"
+            type="submit"
+            disabled={loading || uploading || uploadingGallery}
+          >
             {loading
               ? "Salvataggio…"
               : editingId
