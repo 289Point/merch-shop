@@ -9,8 +9,8 @@ type Product = {
   price: number;
   image_url: string | null;
   category: string;
+  in_stock: boolean;
 };
-
 export default function CatalogBrowser({
   products,
 }: {
