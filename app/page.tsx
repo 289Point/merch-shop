@@ -1,11 +1,11 @@
 import { createClient } from "@/lib/supabase/server";
-import ProductCard from "@/components/ProductCard";
+import CatalogBrowser from "@/components/CatalogBrowser";
 
 export default async function CatalogPage() {
   const supabase = createClient();
   const { data: products } = await supabase
     .from("products")
-    .select("id, name, price, image_url")
+    .select("id, name, price, image_url, category")
     .order("created_at", { ascending: false });
 
   return (
@@ -16,11 +16,7 @@ export default async function CatalogPage() {
       </div>
 
       {products && products.length > 0 ? (
-        <div className="product-grid">
-          {products.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
+        <CatalogBrowser products={products} />
       ) : (
         <div className="empty-state">
           Nessun prodotto ancora in catalogo. Torna a trovarci presto.
