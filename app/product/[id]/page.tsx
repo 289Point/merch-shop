@@ -10,7 +10,7 @@ export default async function ProductDetailPage({
   const supabase = createClient();
   const { data: product } = await supabase
     .from("products")
-    .select("id, name, description, price, image_url")
+    .select("id, name, description, price, image_url, in_stock")
     .eq("id", params.id)
     .single();
 
@@ -31,6 +31,11 @@ export default async function ProductDetailPage({
           <div className="product-detail-price">
             € {product.price.toFixed(2)}
           </div>
+          {product.in_stock === false && (
+            <div className="product-detail-sold-out">
+              Attualmente esaurito
+            </div>
+          )}
           {product.description && (
             <p className="product-detail-desc">{product.description}</p>
           )}
