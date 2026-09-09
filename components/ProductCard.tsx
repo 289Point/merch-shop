@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 type Product = {
   id: string;
@@ -14,7 +15,13 @@ export default function ProductCard({ product }: { product: Product }) {
     <Link href={`/product/${product.id}`} className="product-card">
       <div className="product-card-media">
         {product.image_url ? (
-          <img src={product.image_url} alt={product.name} />
+          <Image
+            src={product.image_url}
+            alt={product.name}
+            fill
+            sizes="(max-width: 640px) 50vw, 220px"
+            style={{ objectFit: "cover" }}
+          />
         ) : (
           <span className="product-card-media-empty">Nessuna immagine</span>
         )}
