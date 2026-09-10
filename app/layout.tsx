@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 
 const SITE_URL = "https://289merch.com";
 const SITE_NAME = "289Point Showroom";
@@ -44,6 +45,7 @@ export default function RootLayout({
       <body>
         <Header />
         <main>{children}</main>
+        <Footer />
       </body>
     </html>
   );
