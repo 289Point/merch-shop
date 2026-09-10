@@ -169,17 +169,19 @@ main {
 
 .catalog-intro {
   padding: 48px 0 32px;
-  max-width: 560px;
+  max-width: 680px;
 }
 
 .catalog-intro h1 {
-  font-size: 2.4rem;
-  margin-bottom: 12px;
+  font-size: 2.6rem;
+  font-weight: 700;
+  margin-bottom: 14px;
 }
 
 .catalog-intro p {
   color: var(--muted);
-  font-size: 1.05rem;
+  font-size: 0.95rem;
+  line-height: 1.6;
 }
 
 .product-grid {
