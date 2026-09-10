@@ -1,14 +1,11 @@
 import { createClient } from "@/lib/supabase/server";
-import AdminProductForm from "./AdminProductForm";
-import SiteSettingsForm from "./SiteSettingsForm";
+import CatalogBrowser from "@/components/CatalogBrowser";
 
-export default async function AdminPage() {
+export default async function CatalogPage() {
   const supabase = createClient();
   const { data: products } = await supabase
     .from("products")
-    .select(
-      "id, name, description, price, image_url, category, in_stock, gallery_urls, sort_order"
-    )
+    .select("id, name, price, image_url, category, in_stock")
     .order("sort_order", { ascending: true });
 
   const { data: settings } = await supabase
@@ -19,15 +16,18 @@ export default async function AdminPage() {
 
   return (
     <>
-      <div className="admin-header">
-        <h1>Pannello admin</h1>
-        <p>Aggiungi, modifica o elimina i prodotti del catalogo.</p>
+      <div className="catalog-intro">
+        <h1>{settings?.catalog_title ?? "Catalogo"}</h1>
+        {settings?.catalog_subtitle && <p>{settings.catalog_subtitle}</p>}
       </div>
-      <SiteSettingsForm
-        initialTitle={settings?.catalog_title ?? ""}
-        initialSubtitle={settings?.catalog_subtitle ?? ""}
-      />
-      <AdminProductForm initialProducts={products ?? []} />
+
+      {products && products.length > 0 ? (
+        <CatalogBrowser products={products} />
+      ) : (
+        <div className="empty-state">
+          Nessun prodotto ancora in catalogo. Torna a trovarci presto.
+        </div>
+      )}
     </>
   );
 }
