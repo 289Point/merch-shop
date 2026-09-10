@@ -3,7 +3,7 @@ import "./globals.css";
 import Header from "@/components/Header";
 
 export const metadata: Metadata = {
-  title: "Catalogo",
+  title: "289Point Showroom",
   description: "Vetrina prodotti",
 };
 
