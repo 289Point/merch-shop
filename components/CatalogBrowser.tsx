@@ -11,6 +11,7 @@ type Product = {
   category: string;
   in_stock: boolean;
 };
+
 export default function CatalogBrowser({
   products,
 }: {
@@ -18,6 +19,7 @@ export default function CatalogBrowser({
 }) {
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState("Tutte");
+  const [density, setDensity] = useState<"comfort" | "compact">("comfort");
 
   const categories = useMemo(() => {
     const unique = Array.from(new Set(products.map((p) => p.category)));
@@ -57,10 +59,30 @@ export default function CatalogBrowser({
             </button>
           ))}
         </div>
+        <div className="catalog-density">
+          <button
+            onClick={() => setDensity("comfort")}
+            className={
+              "catalog-density-chip" +
+              (density === "comfort" ? " active" : "")
+            }
+          >
+            Vista ampia
+          </button>
+          <button
+            onClick={() => setDensity("compact")}
+            className={
+              "catalog-density-chip" +
+              (density === "compact" ? " active" : "")
+            }
+          >
+            Vista compatta
+          </button>
+        </div>
       </div>
 
       {filtered.length > 0 ? (
-        <div className="product-grid">
+        <div className={"product-grid" + (density === "compact" ? " compact" : "")}>
           {filtered.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
