@@ -6,8 +6,7 @@ export default async function CatalogPage() {
   const { data: products } = await supabase
     .from("products")
         .select("id, name, price, image_url, category, in_stock")
-    .order("created_at", { ascending: false });
-
+        .order("sort_order", { ascending: true });
   return (
     <>
       <div className="catalog-intro">
