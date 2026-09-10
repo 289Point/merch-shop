@@ -72,6 +72,14 @@ main {
 .site-title {
   font-size: 1.6rem;
   letter-spacing: 0.01em;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.site-logo {
+  border-radius: 4px;
+  object-fit: contain;
 }
 
 .site-nav {
@@ -111,6 +119,30 @@ main {
   gap: 8px;
 }
 
+.catalog-density {
+  display: flex;
+  gap: 8px;
+}
+
+.catalog-density-chip {
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--muted);
+  padding: 5px 12px;
+  font-size: 0.78rem;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.catalog-density-chip:hover {
+  border-color: var(--ink);
+}
+
+.catalog-density-chip.active {
+  border-color: var(--accent);
+  color: var(--ink);
+  font-weight: 600;
+}
 .catalog-category-chip {
   border: 1px solid var(--line);
   background: transparent;
