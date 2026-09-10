@@ -155,6 +155,23 @@ main {
   padding-bottom: 40px;
 }
 
+.product-grid.compact {
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 14px;
+}
+
+.product-grid.compact .product-card-body {
+  padding: 8px 10px 10px;
+  gap: 3px;
+}
+
+.product-grid.compact .product-card-name {
+  font-size: 0.88rem;
+}
+
+.product-grid.compact .product-card-price {
+  font-size: 0.82rem;
+}
 .product-card {
   background: var(--paper);
   border: 1px solid var(--paper-line);
