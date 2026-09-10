@@ -1,7 +1,47 @@
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import ProductGallery from "@/components/ProductGallery";
+import { CONTACT_EMAIL, WHATSAPP_NUMBER } from "@/lib/contact";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: { id: string };
+}): Promise<Metadata> {
+  const supabase = createClient();
+  const { data: product } = await supabase
+    .from("products")
+    .select("name, description, price, image_url")
+    .eq("id", params.id)
+    .single();
+
+  if (!product) {
+    return { title: "Prodotto non trovato" };
+  }
+
+  const title = `${product.name} — € ${product.price.toFixed(2)}`;
+  const description =
+    product.description ??
+    `Scopri "${product.name}" nel catalogo di 289Point Showroom.`;
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      images: product.image_url ? [{ url: product.image_url }] : undefined,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: product.image_url ? [product.image_url] : undefined,
+    },
+  };
+}
 
 export default async function ProductDetailPage({
   params,
