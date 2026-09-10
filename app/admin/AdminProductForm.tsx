@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { compressImage } from "@/lib/imageCompress";
+
 type Product = {
   id: string;
   name: string;
@@ -12,6 +13,7 @@ type Product = {
   category: string;
   in_stock: boolean;
   gallery_urls: string[];
+  sort_order: number;
 };
 
 export default function AdminProductForm({
@@ -35,6 +37,7 @@ export default function AdminProductForm({
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadingGallery, setUploadingGallery] = useState(false);
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
 
   function resetForm() {
     setEditingId(null);
@@ -59,7 +62,7 @@ export default function AdminProductForm({
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-    async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const rawFile = e.target.files?.[0];
     if (!rawFile) return;
 
@@ -68,6 +71,7 @@ export default function AdminProductForm({
 
     const file = await compressImage(rawFile);
     const filePath = `${Date.now()}-${file.name}`;
+
     const { error: uploadError } = await supabase.storage
       .from("product-images")
       .upload(filePath, file);
@@ -97,7 +101,7 @@ export default function AdminProductForm({
 
     const uploadedUrls: string[] = [];
 
-        for (const rawFile of Array.from(files)) {
+    for (const rawFile of Array.from(files)) {
       const file = await compressImage(rawFile);
       const filePath = `${Date.now()}-${file.name}`;
       const { error: uploadError } = await supabase.storage
@@ -137,7 +141,7 @@ export default function AdminProductForm({
 
     setLoading(true);
 
-    const payload = {
+    const payload: Record<string, unknown> = {
       name,
       description: description || null,
       price: parsedPrice,
@@ -146,6 +150,14 @@ export default function AdminProductForm({
       in_stock: inStock,
       gallery_urls: galleryUrls,
     };
+
+    if (!editingId) {
+      const maxOrder = products.reduce(
+        (max, p) => Math.max(max, p.sort_order),
+        -1
+      );
+      payload.sort_order = maxOrder + 1;
+    }
 
     if (editingId) {
       const { data, error } = await supabase
@@ -198,6 +210,32 @@ export default function AdminProductForm({
 
     setProducts((prev) => prev.filter((p) => p.id !== id));
     if (editingId === id) resetForm();
+  }
+
+  function handleDragStart(index: number) {
+    setDraggedIndex(index);
+  }
+
+  function handleDragOver(e: React.DragEvent) {
+    e.preventDefault();
+  }
+
+  async function handleDrop(index: number) {
+    if (draggedIndex === null || draggedIndex === index) return;
+
+    const reordered = [...products];
+    const [moved] = reordered.splice(draggedIndex, 1);
+    reordered.splice(index, 0, moved);
+
+    setProducts(reordered);
+    setDraggedIndex(null);
+
+    // Salva il nuovo ordine sul database
+    await Promise.all(
+      reordered.map((p, i) =>
+        supabase.from("products").update({ sort_order: i }).eq("id", p.id)
+      )
+    );
   }
 
   return (
@@ -363,8 +401,18 @@ export default function AdminProductForm({
         {products.length === 0 && (
           <div className="empty-state">Nessun prodotto ancora creato.</div>
         )}
-        {products.map((product) => (
-          <div className="admin-row" key={product.id}>
+        {products.map((product, index) => (
+          <div
+            className="admin-row"
+            key={product.id}
+            draggable
+            onDragStart={() => handleDragStart(index)}
+            onDragOver={handleDragOver}
+            onDrop={() => handleDrop(index)}
+          >
+            <span className="admin-row-drag" title="Trascina per riordinare">
+              ⠿
+            </span>
             <div className="admin-row-thumb">
               {product.image_url && (
                 <img src={product.image_url} alt={product.name} />
