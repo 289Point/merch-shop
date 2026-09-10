@@ -556,6 +556,17 @@ main {
   color: var(--paper-ink);
 }
 
+.admin-row-drag {
+  cursor: grab;
+  color: var(--paper-muted);
+  font-size: 1.1rem;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.admin-row-drag:active {
+  cursor: grabbing;
+}
 .admin-row-thumb {
   width: 56px;
   height: 56px;
